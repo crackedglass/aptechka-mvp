@@ -6,3 +6,6 @@ node_modules/
 dist/
 .openai/
 *.zip
+# SSH deploy keys
+/ansible
+/ansible.pub

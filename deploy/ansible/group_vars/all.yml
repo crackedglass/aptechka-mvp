@@ -1,0 +1,27 @@
+# Where the stack lives on the server.
+aptechka_dir: /opt/aptechka
+
+# Images are built and pushed to GHCR by .github/workflows/deploy.yml.
+aptechka_registry: ghcr.io
+aptechka_image_prefix: ghcr.io/kekkka/aptechka-beta
+aptechka_image_tag: "{{ lookup('env', 'APTECHKA_IMAGE_TAG') or 'latest' }}"
+# Leave empty for public images; the deploy workflow passes the job's GITHUB_TOKEN.
+aptechka_registry_username: "{{ lookup('env', 'APTECHKA_REGISTRY_USERNAME') }}"
+aptechka_registry_password: "{{ lookup('env', 'APTECHKA_REGISTRY_PASSWORD') }}"
+
+# Public port of the nginx frontend (it proxies /api to the backend).
+aptechka_http_port: 80
+aptechka_public_url: "http://{{ ansible_host }}"
+
+aptechka_postgres_db: aptechka
+aptechka_postgres_user: aptechka
+# Required: set APTECHKA_POSTGRES_PASSWORD (or -e / Ansible Vault), never commit it.
+# Changing it later does not change the password of an existing database volume.
+aptechka_postgres_password: "{{ lookup('env', 'APTECHKA_POSTGRES_PASSWORD') }}"
+
+aptechka_timezone: Europe/Moscow
+# Add the GitHub Pages origin here if the frontend is also published there.
+aptechka_cors_allowed_origins: "{{ aptechka_public_url }}"
+
+# Open only SSH and HTTP(S) in ufw. Set to false if the provider's firewall handles it.
+aptechka_manage_firewall: true

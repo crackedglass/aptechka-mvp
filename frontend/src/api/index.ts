@@ -14,4 +14,6 @@ export function createApi(client: ApiClient) {
 
 export type Api = ReturnType<typeof createApi>;
 
-export const api = createApi(createClient({baseUrl: import.meta.env?.VITE_API_URL ?? 'http://localhost:8080'}));
+// Empty base URL means same origin: the Vite dev server and nginx proxy /api and
+// /actuator to the backend. Set VITE_API_URL only when the API lives on another host.
+export const api = createApi(createClient({baseUrl: import.meta.env?.VITE_API_URL ?? ''}));

@@ -1,18 +1,15 @@
-import {useContext, useEffect, useRef, type ReactNode} from 'react';
-import {AppContext} from '../AppContext.ts';
+import {useEffect, useRef, type ReactNode} from 'react';
 import {Icon} from './Icon.tsx';
 
 const FOCUSABLE = 'button,a[href],input:not([type=hidden]),select,textarea,summary';
 
 // Bottom sheet dialog. While mounted it makes the app inert, locks page scroll,
-// closes on Escape and keeps Tab focus inside the sheet. Outside the demo app
-// (no AppContext) the caller passes onClose.
-export function Sheet({title, subtitle, footer, children, onClose}: {title: ReactNode; subtitle?: ReactNode; footer?: ReactNode; children?: ReactNode; onClose?: () => void}) {
-  const demo = useContext(AppContext), closeSheet = onClose ?? demo?.closeSheet ?? (() => {});
+// closes on Escape and keeps Tab focus inside the sheet.
+export function Sheet({title, subtitle, footer, children, onClose}: {title: ReactNode; subtitle?: ReactNode; footer?: ReactNode; children?: ReactNode; onClose: () => void}) {
   const root = useRef<HTMLDivElement>(null), closeBtn = useRef<HTMLButtonElement>(null);
   // Read through a ref so a new onClose on re-render does not re-run the effect (and steal focus).
-  const close = useRef(closeSheet);
-  close.current = closeSheet;
+  const close = useRef(onClose);
+  close.current = onClose;
 
   useEffect(() => {
     const app = document.getElementById('app')!;

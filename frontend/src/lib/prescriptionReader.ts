@@ -172,23 +172,3 @@ export async function readPrescription(files: File[], {signal, onProgress}: {sig
     await pdf?.destroy();
   }
 }
-
-// Renders a fictional printed prescription so the demo runs through real OCR.
-export async function demoPrescriptionFile() {
-  const c = document.createElement('canvas');
-  c.width = 1500;
-  c.height = 1100;
-  const x = c.getContext('2d')!;
-  x.fillStyle = '#fff';
-  x.fillRect(0, 0, c.width, c.height);
-  x.fillStyle = '#182b3a';
-  x.font = 'bold 42px Arial';
-  x.fillText('УЧЕБНОЕ НАЗНАЧЕНИЕ', 90, 100);
-  x.font = '28px Arial';
-  x.fillText('Вымышленные препараты. Не является назначением врача.', 90, 160);
-  const lines = ['1. Учебный Альфа 10 мг, таблетки.', 'По 1 таблетке в 09:00 и 19:00, после еды, 7 дней.', '', '2. Учебный Бета 5 мг, капсулы.', 'По 1 капсуле в 14:00, во время еды, 5 дней.'];
-  x.font = '34px Arial';
-  lines.forEach((l, i) => x.fillText(l, 90, 300 + i * 78));
-  const blob = await new Promise<Blob>(r => c.toBlob(b => r(b!), 'image/png'));
-  return new File([blob], 'Учебное назначение.png', {type: 'image/png'});
-}

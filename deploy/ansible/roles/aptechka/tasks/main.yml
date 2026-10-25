@@ -1,0 +1,73 @@
+- name: Allow SSH and HTTP(S) through ufw
+  when: aptechka_manage_firewall
+  block:
+    - name: Install ufw
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+
+    - name: Open ports
+      community.general.ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop: ["22", "{{ aptechka_http_port | string }}", "443"]
+
+    - name: Enable ufw with deny by default
+      community.general.ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+- name: Create the stack directory
+  ansible.builtin.file:
+    path: "{{ aptechka_dir }}"
+    state: directory
+    mode: "0750"
+
+- name: Write the environment file
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ aptechka_dir }}/.env"
+    mode: "0600"
+
+- name: Write the compose file
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ aptechka_dir }}/compose.yaml"
+    mode: "0640"
+
+- name: Log in to the image registry
+  when: aptechka_registry_password | length > 0
+  community.docker.docker_login:
+    registry_url: "{{ aptechka_registry }}"
+    username: "{{ aptechka_registry_username }}"
+    password: "{{ aptechka_registry_password }}"
+  no_log: true
+
+- name: Pull images and start the stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ aptechka_dir }}"
+    pull: always
+    remove_orphans: true
+    wait: true
+    wait_timeout: 300
+
+- name: Log out of the image registry
+  when: aptechka_registry_password | length > 0
+  community.docker.docker_login:
+    registry_url: "{{ aptechka_registry }}"
+    state: absent
+
+- name: Remove dangling images
+  community.docker.docker_prune:
+    images: true
+
+- name: Wait for the backend through nginx
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ aptechka_http_port }}/actuator/health"
+    status_code: 200
+  register: aptechka_health
+  until: aptechka_health.status == 200
+  retries: 30
+  delay: 5

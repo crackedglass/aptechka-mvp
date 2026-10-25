@@ -4,7 +4,7 @@ import {Icon} from '../components/Icon.tsx';
 import {Field, Hint} from '../components/ui.tsx';
 import {errorText} from './hooks.ts';
 
-export function AuthScreen({onSignedIn, onDemo}: {onSignedIn: (me: Me) => void; onDemo: () => void}) {
+export function AuthScreen({onSignedIn}: {onSignedIn: (me: Me) => void}) {
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -46,7 +46,7 @@ export function AuthScreen({onSignedIn, onDemo}: {onSignedIn: (me: Me) => void; 
           <button className={tab === 'login' ? 'active' : ''} onClick={() => { setTab('login'); setError(''); }}>Вход</button>
           <button className={tab === 'register' ? 'active' : ''} onClick={() => { setTab('register'); setError(''); }}>Регистрация</button>
         </div>
-        {serverUp === false && <Hint tone="orange" icon="alert">Сервер сейчас недоступен. Можно открыть демо без входа.</Hint>}
+        {serverUp === false && <Hint tone="orange" icon="alert">Сервер сейчас недоступен. Попробуйте позже.</Hint>}
         <form className="card padded space" onSubmit={submit}>
           {tab === 'register' && <Field label="Как к вам обращаться" name="displayName" required maxLength={100} autoComplete="name" />}
           <Field label="Почта" name="email" type="email" required maxLength={254} autoComplete="email" />
@@ -55,8 +55,7 @@ export function AuthScreen({onSignedIn, onDemo}: {onSignedIn: (me: Me) => void; 
           {error && <div className="error" role="alert">{error}</div>}
           <button className="btn btn-primary btn-full" disabled={busy}>{busy ? 'Подождите…' : tab === 'login' ? 'Войти' : 'Создать аккаунт'}</button>
         </form>
-        <button className="btn btn-white btn-full space" onClick={onDemo}><Icon name="eye" /> Открыть демо без входа</button>
-        <p className="caption">Демо работает в этом браузере и не требует сервера. В аккаунте данные общие для всего круга заботы.</p>
+        <p className="caption">Данные хранятся на сервере и общие для всего круга заботы.</p>
       </main>
     </div>
   );

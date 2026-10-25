@@ -1,0 +1,12 @@
+- name: Deploy Aptechka
+  hosts: production
+  become: true
+  pre_tasks:
+    - name: Require the database password
+      ansible.builtin.assert:
+        that: aptechka_postgres_password | length > 0
+        fail_msg: Set APTECHKA_POSTGRES_PASSWORD or aptechka_postgres_password.
+        quiet: true
+  roles:
+    - docker
+    - aptechka

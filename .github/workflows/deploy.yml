@@ -1,0 +1,92 @@
+name: Deploy
+
+# main → tests → images in GHCR → Ansible rolls them out to the server (deploy/ansible).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  images:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        service: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image name
+        id: image
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/${{ matrix.service }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ steps.image.outputs.name }}:${{ github.sha }}
+            ${{ steps.image.outputs.name }}:latest
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: production
+      url: http://87.242.119.101
+    defaults:
+      run:
+        working-directory: deploy/ansible
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install Ansible
+        run: pip install ansible-core && ansible-galaxy collection install -r requirements.yml
+      - name: Set up SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Run playbook
+        env:
+          APTECHKA_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          APTECHKA_IMAGE_TAG: ${{ github.sha }}
+          # The job token is valid only while the job runs; the playbook logs out afterwards.
+          APTECHKA_REGISTRY_USERNAME: ${{ github.actor }}
+          APTECHKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER || 'root' }}
+          CORS_ALLOWED_ORIGINS: ${{ vars.CORS_ALLOWED_ORIGINS }}
+        run: |
+          extra=(-e "ansible_user=$DEPLOY_USER" -e "ansible_ssh_private_key_file=$HOME/.ssh/id_deploy")
+          if [ -n "$CORS_ALLOWED_ORIGINS" ]; then
+            extra+=(-e "aptechka_cors_allowed_origins=$CORS_ALLOWED_ORIGINS")
+          fi
+          ansible-playbook playbook.yml "${extra[@]}"

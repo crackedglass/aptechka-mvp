@@ -1,11 +1,17 @@
 name: aptechka-frontend
 
+# Frontend alone, proxying the API to a backend running on the host (port 8080).
+# The full stack lives in the repository root compose.yaml.
 services:
   frontend:
     build:
       context: .
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+        VITE_API_URL: ${VITE_API_URL:-}
+    environment:
+      BACKEND_URL: ${BACKEND_URL:-http://host.docker.internal:8080}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     ports:
       - "8765:80"
