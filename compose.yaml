@@ -49,7 +49,7 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "8765:80"
+      - "8765:8081"
 
 volumes:
   postgres-data:
