@@ -37,27 +37,40 @@
     dest: "{{ aptechka_dir }}/compose.yaml"
     mode: "0640"
 
-- name: Log in to the image registry
-  when: aptechka_registry_password | length > 0
-  community.docker.docker_login:
-    registry_url: "{{ aptechka_registry }}"
-    username: "{{ aptechka_registry_username }}"
-    password: "{{ aptechka_registry_password }}"
-  no_log: true
+- name: Pull images
+  block:
+    - name: Log in to the image registry
+      when: aptechka_registry_password | length > 0
+      community.docker.docker_login:
+        registry_url: "{{ aptechka_registry }}"
+        username: "{{ aptechka_registry_username }}"
+        password: "{{ aptechka_registry_password }}"
+      no_log: true
 
-- name: Pull images and start the stack
+    # Separate from `up` and retried: blob downloads from GitHub's CDN drop now and then,
+    # and already pulled layers are kept between attempts.
+    - name: Pull images
+      community.docker.docker_compose_v2_pull:
+        project_src: "{{ aptechka_dir }}"
+      register: aptechka_pull
+      until: aptechka_pull is succeeded
+      retries: 5
+      delay: 10
+  always:
+    # Even after a failed pull, so the token is not left in /root/.docker/config.json.
+    - name: Log out of the image registry
+      when: aptechka_registry_password | length > 0
+      community.docker.docker_login:
+        registry_url: "{{ aptechka_registry }}"
+        state: absent
+
+- name: Start the stack
   community.docker.docker_compose_v2:
     project_src: "{{ aptechka_dir }}"
-    pull: always
+    pull: missing
     remove_orphans: true
     wait: true
     wait_timeout: 300
-
-- name: Log out of the image registry
-  when: aptechka_registry_password | length > 0
-  community.docker.docker_login:
-    registry_url: "{{ aptechka_registry }}"
-    state: absent
 
 - name: Remove dangling images
   community.docker.docker_prune:
