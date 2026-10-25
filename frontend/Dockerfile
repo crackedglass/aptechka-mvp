@@ -13,4 +13,4 @@ FROM nginx:1.29-alpine
 ENV BACKEND_URL=http://backend:8080
 COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8081
