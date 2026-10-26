@@ -62,13 +62,20 @@ https://github.com/naptha/tesseract.js-core
 https://github.com/mozilla/pdf.js
 https://github.com/naptha/tessdata
 
-Развёртывание на сервер 87.242.119.101 (deploy/ansible + .github/workflows)
+Развёртывание на сервер 87.242.119.101, https://aptechka-beta.duckdns.org/
+(deploy/ansible + .github/workflows)
 CI (ci.yml) на каждую ветку и PR: тесты бекенда (Gradle, Java 25), тесты
 и сборка фронтенда, проверка синтаксиса плейбука.
 Deploy (deploy.yml) на push в main или вручную: те же проверки, сборка образов
 backend и frontend в ghcr.io/<репозиторий>/{backend,frontend}, затем Ansible
 ставит Docker на сервер, кладёт /opt/aptechka/{compose.yaml,.env} и поднимает
-стек. Наружу открыт только nginx на 80 порту, Postgres и бекенд во внутренней сети.
+стек, затем пишет /etc/caddy/Caddyfile и перезагружает Caddy.
+Caddy стоит на сервере без Docker (ставится вручную, плейбук его только
+настраивает): принимает 80/443, сам получает и продлевает сертификат Let's
+Encrypt для aptechka-beta.duckdns.org и проксирует на nginx фронтенда, который
+слушает только 127.0.0.1:8765. Postgres и бекенд во внутренней сети Docker.
+Запись DuckDNS должна указывать на 87.242.119.101 до первого деплоя.
+Домен и порт — aptechka_domain и aptechka_frontend_port в group_vars/all.yml.
 Settings → Secrets and variables → Actions:
   секреты DEPLOY_SSH_KEY — приватный ключ, публичная часть в authorized_keys на сервере;
           DEPLOY_KNOWN_HOSTS — вывод ssh-keyscan 87.242.119.101;

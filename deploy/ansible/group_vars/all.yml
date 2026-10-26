@@ -9,9 +9,15 @@ aptechka_image_tag: "{{ lookup('env', 'APTECHKA_IMAGE_TAG') or 'latest' }}"
 aptechka_registry_username: "{{ lookup('env', 'APTECHKA_REGISTRY_USERNAME') }}"
 aptechka_registry_password: "{{ lookup('env', 'APTECHKA_REGISTRY_PASSWORD') }}"
 
-# Public port of the nginx frontend (it proxies /api to the backend).
-aptechka_http_port: 80
-aptechka_public_url: "http://{{ ansible_host }}"
+# Caddy on the host terminates TLS for this domain and proxies to the nginx frontend.
+# The DuckDNS record must point at the server before the first deploy (for the certificate).
+aptechka_domain: aptechka-beta.duckdns.org
+aptechka_public_url: "https://{{ aptechka_domain }}"
+# Optional: Let's Encrypt sends certificate expiry notices here.
+aptechka_acme_email: ""
+# The nginx frontend (it proxies /api to the backend) listens only on the host's loopback,
+# where Caddy reaches it; Docker's published ports bypass ufw, so it is not public.
+aptechka_frontend_port: 8765
 
 aptechka_postgres_db: aptechka
 aptechka_postgres_user: aptechka
@@ -23,5 +29,5 @@ aptechka_timezone: Europe/Moscow
 # Add the GitHub Pages origin here if the frontend is also published there.
 aptechka_cors_allowed_origins: "{{ aptechka_public_url }}"
 
-# Open only SSH and HTTP(S) in ufw. Set to false if the provider's firewall handles it.
+# Open only SSH and HTTP(S) in ufw (80 stays open for ACME challenges and the HTTPS redirect). Set to false if the provider's firewall handles it.
 aptechka_manage_firewall: true

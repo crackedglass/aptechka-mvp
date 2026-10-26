@@ -9,4 +9,6 @@
         quiet: true
   roles:
     - docker
+    # Before caddy: an older stack published nginx on port 80, which Caddy needs.
     - aptechka
+    - caddy

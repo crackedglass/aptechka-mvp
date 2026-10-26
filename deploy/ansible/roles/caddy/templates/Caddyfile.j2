@@ -1,0 +1,14 @@
+# Managed by Ansible (deploy/ansible). Local edits are overwritten on the next deploy.
+# Caddy runs on the host (not in Docker): it terminates TLS for {{ aptechka_domain }},
+# gets and renews the Let's Encrypt certificate itself and redirects HTTP to HTTPS.
+# nginx in the frontend container keeps serving the SPA and proxying /api to the backend.
+{% if aptechka_acme_email %}
+{
+    email {{ aptechka_acme_email }}
+}
+
+{% endif %}
+{{ aptechka_domain }} {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:{{ aptechka_frontend_port }}
+}

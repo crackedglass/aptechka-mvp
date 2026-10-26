@@ -1,0 +1,38 @@
+# Caddy is installed on the host by hand (apt package, systemd unit "caddy");
+# this role only writes its config, so it fails early if Caddy is missing.
+- name: Check that Caddy is installed
+  ansible.builtin.command: caddy version
+  changed_when: false
+
+- name: Write the Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: /etc/caddy/Caddyfile
+    owner: root
+    group: caddy
+    mode: "0644"
+    validate: caddy validate --adapter caddyfile --config %s
+  notify: Reload Caddy
+
+# Started rather than only reloaded: before this deploy the frontend container held port 80,
+# so Caddy may not be running yet.
+- name: Start Caddy
+  ansible.builtin.service:
+    name: caddy
+    state: started
+    enabled: true
+
+- name: Apply the new Caddyfile
+  ansible.builtin.meta: flush_handlers
+
+# From the control machine, so DNS, the firewall and the certificate are checked too.
+- name: Wait for the site over HTTPS
+  ansible.builtin.uri:
+    url: "{{ aptechka_public_url }}/actuator/health"
+    status_code: 200
+  delegate_to: localhost
+  become: false
+  register: aptechka_public_health
+  until: aptechka_public_health.status == 200
+  retries: 30
+  delay: 5

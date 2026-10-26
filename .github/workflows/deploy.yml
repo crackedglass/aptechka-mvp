@@ -55,7 +55,7 @@ jobs:
       packages: read
     environment:
       name: production
-      url: http://87.242.119.101
+      url: https://aptechka-beta.duckdns.org
     defaults:
       run:
         working-directory: deploy/ansible

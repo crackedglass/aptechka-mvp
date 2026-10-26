@@ -1,3 +1,9 @@
+# Behind Caddy the request reaches nginx over plain HTTP; keep the scheme Caddy reports.
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
 server {
     listen 8081;
     root /usr/share/nginx/html;
@@ -14,7 +20,7 @@ server {
         proxy_pass ${BACKEND_URL};
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto $forwarded_proto;
     }
 
     location = /actuator/health {

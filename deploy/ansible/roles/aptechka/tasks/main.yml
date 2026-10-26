@@ -9,9 +9,14 @@
     - name: Open ports
       community.general.ufw:
         rule: allow
-        port: "{{ item }}"
-        proto: tcp
-      loop: ["22", "{{ aptechka_http_port | string }}", "443"]
+        port: "{{ item.port }}"
+        proto: "{{ item.proto }}"
+      loop:
+        - { port: "22", proto: tcp }
+        - { port: "80", proto: tcp }
+        - { port: "443", proto: tcp }
+        # HTTP/3, which Caddy serves by default.
+        - { port: "443", proto: udp }
 
     - name: Enable ufw with deny by default
       community.general.ufw:
@@ -78,7 +83,7 @@
 
 - name: Wait for the backend through nginx
   ansible.builtin.uri:
-    url: "http://127.0.0.1:{{ aptechka_http_port }}/actuator/health"
+    url: "http://127.0.0.1:{{ aptechka_frontend_port }}/actuator/health"
     status_code: 200
   register: aptechka_health
   until: aptechka_health.status == 200
