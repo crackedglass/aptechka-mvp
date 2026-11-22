@@ -39,6 +39,9 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
+      # Dependencies and dist are produced inside the build stage, not on the host.
+      target: runtime
       args:
         # Empty: the browser calls /api on the frontend's origin and nginx proxies it.
         VITE_API_URL: ${VITE_API_URL:-}

@@ -1,4 +1,10 @@
 node_modules
 dist
+.pnpm-store
+.git
 .env
 .env.*
+!.env.example
+*.tsbuildinfo
+.migration-backup
+__pycache__

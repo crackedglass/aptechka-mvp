@@ -1,0 +1,13 @@
+.DS_Store
+node_modules/
+dist/
+.pnpm-store/
+.env
+.env.*
+!.env.example
+.openai/
+*.zip
+*.tsbuildinfo
+.migration-backup/
+
+__pycache__/
