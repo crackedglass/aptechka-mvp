@@ -43,7 +43,7 @@ Install Docker with the Docker Compose plugin and start the Docker daemon. No ho
 | Backend health check | http://localhost:8080/actuator/health |
 | PostgreSQL | `127.0.0.1:5432` |
 
-The nginx frontend also proxies `/api/` and `/actuator/health` to the backend. The API has no landing page at `/api`; see the [backend API reference](backend/README.md) for endpoints. The tracking app registers accounts through `POST /api/auth/register` and uses HTTP Basic. See the [tracking rollout and recovery guide](docs/mvp-tracking-rollout.md) for deployment and data handling.
+The nginx frontend also proxies `/api/` and `/actuator/health` to the backend. The API has no landing page at `/api`; see the [backend API reference](backend/README.md) for endpoints. The tracking app registers accounts through `POST /api/auth/register` and uses HTTP Basic. See the [tracking use cases and event flows](docs/tracking-use-cases.md) for sequence diagrams and event diagrams, and the [tracking rollout and recovery guide](docs/mvp-tracking-rollout.md) for deployment and data handling.
 
 Useful commands:
 
