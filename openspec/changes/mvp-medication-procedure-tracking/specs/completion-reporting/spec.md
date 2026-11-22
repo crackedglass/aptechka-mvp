@@ -1,7 +1,7 @@
 ## ADDED Requirements
 
 ### Requirement: Full positive reports with independent authorship
-The system SHALL accept full-completion assertions by the manager, caregiver or activated patient for a specific occurrence, showing its scheduled dose or procedure instructions while reporting. A medication report SHALL mean the full scheduled dose was taken; a procedure report SHALL mean the entire procedure was completed. Report author and patient receiving care SHALL be separate identities. Reports SHALL NOT represent partial care, not-done assertions or a required patient acknowledgment of caregiver administration.
+The system SHALL accept only full-completion reports by currently authorized actors for a specific occurrence, identifying author and patient separately. Reporting SHALL show the full scheduled dose or procedure instructions. Medication reports assert the full dose was taken. Procedure reports assert the whole procedure was completed. The system SHALL NOT require patient acknowledgment of caregiver care.
 
 #### Scenario: Manager provides care
 - **WHEN** the manager reports a dose they personally provided
@@ -23,7 +23,7 @@ Each actor SHALL have one report lineage per occurrence; later changes SHALL be 
 - **THEN** both authors' reports are retained and the occurrence counts as completed once
 
 ### Requirement: Actual care time and historical reporting
-The system SHALL store actual completion time separately from submission time as absolute timestamps and SHALL reject actual completion times in the future. It SHALL permit care before or after the scheduled time without the prototype's one-hour window. Today's tasks SHALL be the default view and previous days SHALL remain accessible for late reports. Submission SHALL stay linked to the selected occurrence. An occurrence with no valid report SHALL be pending until its scheduled time and overdue after that time; overdue SHALL NOT assert that care failed to happen or create an automatic missed/not-done report.
+The system SHALL store actual completion and submission as separate absolute timestamps and reject future actual times. Actors SHALL be able to report before or after the scheduled time without the one-hour window. Today's tasks SHALL open by default, and late reports SHALL remain linked to their selected historical occurrence.
 
 #### Scenario: Report yesterday's care today
 - **WHEN** an actor opens yesterday's patient-local schedule and reports an occurrence today with a nonfuture actual care time
@@ -37,10 +37,6 @@ The system SHALL store actual completion time separately from submission time as
 #### Scenario: Reject future actual time
 - **WHEN** an actor submits an actual completion time later than the current time
 - **THEN** the system rejects the report
-
-#### Scenario: Scheduled time passes without a report
-- **WHEN** an open unreported occurrence passes its scheduled time
-- **THEN** its derived status becomes overdue without creating a missed or not-done assertion
 
 ### Requirement: Append-only author corrections and retractions
 Only the report author SHALL append a correction or retraction, with a required reason. The system SHALL preserve the original, all revisions, the correcting actor and timestamps. Retraction SHALL invalidate that author's assertion without erasing it. A remaining valid report SHALL keep the occurrence completed; removing the last valid report SHALL return it to pending or overdue and notify the manager. Visibility SHALL follow care-access permissions.
@@ -63,7 +59,7 @@ Only the report author SHALL append a correction or retraction, with a required 
 - **AND** the manager receives an inbox notification
 
 ### Requirement: Shared completion warning and current-state acknowledgment
-All authorized actors SHALL see shared completion status before reporting. When a valid report exists, the system SHALL display “Already reported complete” and the recorded completion time, and SHALL require explicit acknowledgment that a new report confirms the same care rather than another administration. The system SHALL refresh and recheck status before accepting the submission, including concurrent changes, without exposing other actors' detailed reports to caregivers. Recorded completion SHALL NOT be presented as proof of the number of physical administrations.
+The system SHALL show shared completion status before reporting. When a valid report exists, it SHALL show “Already reported complete” and the recorded completion time, and require acknowledgment that the new report confirms the same care. Submission SHALL recheck current status without exposing other authors' details to caregivers. The system SHALL NOT present recorded completion as proof of the number of administrations.
 
 #### Scenario: Confirm already reported care
 - **WHEN** an actor attempts an additional report on a completed occurrence
@@ -72,3 +68,14 @@ All authorized actors SHALL see shared completion status before reporting. When 
 #### Scenario: Another actor completes after the screen loads
 - **WHEN** a report is submitted from a previously uncompleted view after another actor's report has been accepted
 - **THEN** the system requires acknowledgment against the updated completion status before accepting the new report
+
+#### Scenario: Valid reports disagree on actual time
+- **WHEN** valid reports give differing actual completion times
+- **THEN** shared status displays the earliest currently valid actual time
+
+### Requirement: Time-based occurrence status
+An open occurrence without a valid report SHALL be pending until its scheduled time and overdue afterwards. Overdue SHALL NOT assert failed care or create a missed or not-done report.
+
+#### Scenario: Scheduled time passes without a report
+- **WHEN** an open unreported occurrence passes its scheduled time
+- **THEN** its derived status becomes overdue without creating a missed or not-done assertion

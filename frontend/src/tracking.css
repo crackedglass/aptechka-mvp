@@ -1,0 +1,117 @@
+.tracking-app {
+  max-width: 64rem;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  color: #21332c;
+  background: #f4f8f5;
+  font:
+    1rem/1.5 system-ui,
+    sans-serif;
+}
+.tracking-app :is(h1, h2, h3, h4, p) {
+  margin: 0 0 0.65rem;
+}
+.tracking-header,
+.tracking-profile,
+.tracking-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.tracking-header,
+.tracking-profile {
+  justify-content: space-between;
+}
+.tracking-header {
+  margin-bottom: 1rem;
+}
+.tracking-app button {
+  font: inherit;
+  color: #184731;
+  border: 1px solid #9bb9a9;
+  border-radius: 0.6rem;
+  background: #f4f8f5;
+  padding: 0.45rem 0.8rem;
+  min-height: 2.7rem;
+  cursor: pointer;
+}
+.tracking-app button[aria-pressed="true"],
+.tracking-form button:not([type="button"]) {
+  background: #1b5a40;
+  border-color: #1b5a40;
+  color: white;
+}
+.tracking-app button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.tracking-app :is(input:not([type="checkbox"]), select, textarea) {
+  font: inherit;
+  color: inherit;
+  background: white;
+  border: 1px solid #a8bdb1;
+  border-radius: 0.45rem;
+  padding: 0.45rem 0.55rem;
+  width: 100%;
+  max-width: 100%;
+}
+.tracking-app :is(input, select, textarea, button, summary):focus-visible {
+  outline: 2px solid #1b5a40;
+  outline-offset: 2px;
+}
+.tracking-app :is(form, fieldset) {
+  min-width: 0;
+}
+.tracking-workspace {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+.tracking-panel {
+  padding: clamp(1rem, 3vw, 1.65rem);
+  background: white;
+  border: 1px solid #d8e4db;
+  border-radius: 1rem;
+}
+.tracking-form {
+  display: grid;
+  justify-items: start;
+  gap: 0.65rem;
+  max-width: 36rem;
+  margin: 0.65rem 0;
+}
+.tracking-form > label {
+  width: 100%;
+}
+.tracking-list {
+  list-style: none;
+  display: grid;
+  gap: 0.65rem;
+  padding: 0;
+  margin: 0.8rem 0 0;
+}
+.tracking-list > li,
+.tracking-task,
+.tracking-preview {
+  background: #f7faf7;
+  border: 1px solid #d8e4db;
+  border-radius: 0.75rem;
+  padding: 0.8rem 1rem;
+  overflow-wrap: anywhere;
+}
+.tracking-task details {
+  margin-top: 0.65rem;
+}
+.tracking-app summary {
+  cursor: pointer;
+}
+.tracking-error {
+  padding: 0.7rem;
+  color: #8d2418;
+  background: #fff0ec;
+  border-radius: 0.45rem;
+}

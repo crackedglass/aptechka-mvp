@@ -2,6 +2,8 @@ package ru.aptechka.backend.account;
 
 import java.time.Clock;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.aptechka.backend.common.Errors;
+import ru.aptechka.backend.tracking.AccessAudit;
 
 @Service
 public class AccountService implements UserDetailsService {
@@ -18,11 +21,13 @@ public class AccountService implements UserDetailsService {
 	private final AppUserRepository users;
 	private final PasswordEncoder passwordEncoder;
 	private final Clock clock;
+	private final AccessAudit audit;
 
-	public AccountService(AppUserRepository users, PasswordEncoder passwordEncoder, Clock clock) {
+	public AccountService(AppUserRepository users, PasswordEncoder passwordEncoder, Clock clock, AccessAudit audit) {
 		this.users = users;
 		this.passwordEncoder = passwordEncoder;
 		this.clock = clock;
+		this.audit = audit;
 	}
 
 	public static String normalizeEmail(String email) {
@@ -42,7 +47,11 @@ public class AccountService implements UserDetailsService {
 		if (users.existsByEmail(normalized)) {
 			throw Errors.conflict("Пользователь с такой почтой уже зарегистрирован");
 		}
-		return users.save(new AppUser(normalized, passwordEncoder.encode(password), displayName.trim(), clock.instant()));
+		var now = clock.instant();
+		AppUser user = users.saveAndFlush(new AppUser(normalized, passwordEncoder.encode(password), displayName.trim(), now));
+		audit.record(user.getId(), now, user.getId(), "ACCOUNT_CREATED", null,
+				Map.of("email", normalized, "displayName", user.getDisplayName()));
+		return user;
 	}
 
 }

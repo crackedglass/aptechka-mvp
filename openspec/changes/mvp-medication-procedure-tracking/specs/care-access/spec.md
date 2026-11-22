@@ -27,13 +27,12 @@ Only the manager SHALL administer access and invite caregivers or invite the pat
 - **WHEN** the patient accepts their activation invitation and activates login
 - **THEN** the patient receives patient permissions for the existing patient identity without creating a second care recipient
 
-### Requirement: Role-specific commands and views
-All three currently authorized actors SHALL be able to view scheduled tasks and shared completion/handling status, report full completion, claim, release their own claim, explicitly take over handling, and correct or retract their own reports. Only the manager SHALL create, edit or stop instructions/plans, administer invitations/access or reopen cancelled occurrences. Manager and activated patient SHALL see all care reports and corrections; caregivers SHALL see only their own detailed reports/corrections plus necessary instructions, shared completion status, recorded completion time and claim holder/time. No actor SHALL correct another author's report. Caregiver tasks SHALL mean the linked patient's occurrences, without exclusive per-task assignment.
+#### Scenario: Invitation expires or is reissued
+- **WHEN** an invitee attempts acceptance after expiry, supersession or consumption
+- **THEN** the invitation does not create a relationship
 
-#### Scenario: Restrict caregiver history
-- **WHEN** a caregiver opens an occurrence reported by the patient
-- **THEN** the caregiver sees necessary instructions, shared completion status and recorded completion time
-- **AND** the patient's detailed report and correction history are excluded from the caregiver response
+### Requirement: Role-specific commands and views
+All currently authorized actors SHALL see linked tasks and shared status, report full completion, claim, release their own claim, explicitly take over, and correct or retract their own reports. Only the manager SHALL manage plans and access or reopen cancelled occurrences. The caregiver SHALL see the linked patient’s occurrences without exclusive task assignments.
 
 #### Scenario: Patient reads history without editing authority
 - **WHEN** an activated patient reads care history and then attempts to edit a plan or invite a caregiver
@@ -55,3 +54,11 @@ Replacing a caregiver SHALL revoke the former caregiver's access, preserve their
 #### Scenario: Revoked actor attempts access
 - **WHEN** the former caregiver attempts to read tasks or submit a report using their previous session
 - **THEN** current relationship authorization denies access
+
+### Requirement: Role-filtered history
+Managers and activated patients SHALL see all care reports and corrections. Caregivers SHALL see only their own detailed reports and corrections plus instructions, shared completion status and time, and claim holder and time.
+
+#### Scenario: Restrict caregiver history
+- **WHEN** a caregiver opens an occurrence reported by the patient
+- **THEN** the caregiver sees necessary instructions, shared completion status and recorded completion time
+- **AND** the patient's detailed report and correction history are excluded from the caregiver response

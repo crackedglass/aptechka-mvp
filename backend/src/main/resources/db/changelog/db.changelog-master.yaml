@@ -4,3 +4,6 @@ databaseChangeLog:
   - include:
       file: changes/001-init.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/002-tracking.sql
+      relativeToChangelogFile: true

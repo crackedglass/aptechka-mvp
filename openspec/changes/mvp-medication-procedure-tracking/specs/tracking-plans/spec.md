@@ -23,7 +23,7 @@ The system SHALL use one explicit patient time zone to determine occurrence cale
 - **THEN** the patient's time zone determines which occurrences belong to that day
 
 ### Requirement: Versioned effective edits preserve exceptions
-Instruction and schedule edits SHALL create versions and apply from an explicit effective time only to eligible future unreported occurrences. Past unreported occurrences SHALL remain available for late reporting. Historical occurrences/reports SHALL retain their associated versions. Future occurrences that already have reports SHALL be preserved and shown as exceptions before saving. Active claims SHALL protect occurrences from change until explicit release or takeover resolves handling; other eligible occurrences SHALL remain editable. The system SHALL recheck these protections when saving.
+Edits SHALL create instruction and schedule versions at an explicit effective time for eligible future occurrences. Past unreported occurrences SHALL remain available for late reports. Historical occurrences and reports SHALL retain their versions. Preview and commit SHALL preserve future occurrences that have reports or active claims while allowing edits to other eligible occurrences.
 
 #### Scenario: Edit with historical and reported exceptions
 - **WHEN** the manager edits a recurring instruction with a past unreported occurrence and a future reported occurrence
@@ -55,3 +55,11 @@ Cancelling a plan SHALL stop future eligible activities without erasing history 
 #### Scenario: Cancellation meets an active claim
 - **WHEN** the manager attempts to cancel an actively claimed occurrence
 - **THEN** cancellation requires explicit resolution of handling and cannot silently discard the active claim
+
+### Requirement: Future scheduling after a patient time zone change
+A manager's patient time zone change SHALL apply to eligible future occurrences from the change time while preserving historical and protected occurrences.
+
+#### Scenario: Patient time zone changes
+- **WHEN** the manager changes the patient time zone
+- **THEN** historical and protected occurrences retain their original version and scheduled instant
+- **AND** future eligible occurrences use the new zone and their scheduled local clock times
