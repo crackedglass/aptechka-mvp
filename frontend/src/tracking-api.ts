@@ -89,7 +89,7 @@ export class ApiError extends Error {
   }
 }
 
-export function trackingClient(authorization?: string) {
+export function trackingClient() {
   const pending = new Map<string, string>();
   return async function request<T>(
     path: string,
@@ -115,8 +115,6 @@ export function trackingClient(authorization?: string) {
       credentials: "omit",
       cache: "no-store",
       headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        ...(authorization ? { Authorization: authorization } : {}),
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -141,11 +139,6 @@ export function trackingClient(authorization?: string) {
 }
 
 export type Request = ReturnType<typeof trackingClient>;
-
-export function basic(email: string, password: string) {
-  const bytes = new TextEncoder().encode(`${email}:${password}`);
-  return `Basic ${btoa(String.fromCharCode(...bytes))}`;
-}
 
 export function localInput(value = new Date()) {
   const local = new Date(value.getTime() - value.getTimezoneOffset() * 60_000);

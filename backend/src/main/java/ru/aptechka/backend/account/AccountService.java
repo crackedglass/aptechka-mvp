@@ -34,6 +34,13 @@ public class AccountService implements UserDetailsService {
 		return email.trim().toLowerCase(Locale.ROOT);
 	}
 
+	@Transactional
+	public CurrentUser guest() {
+		AppUser user = users.findByEmail("guest@local")
+				.orElseGet(() -> users.saveAndFlush(new AppUser("guest@local", "", "Гость", clock.instant())));
+		return CurrentUser.of(user);
+	}
+
 	@Override
 	public UserDetails loadUserByUsername(String username) {
 		return users.findByEmail(normalizeEmail(username))

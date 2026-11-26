@@ -7,7 +7,6 @@ import {
 } from "react";
 import {
   ApiError,
-  basic,
   trackingClient,
   type Account,
   type Profile,
@@ -18,19 +17,12 @@ import TrackingPatient from "./TrackingPatient";
 import "./tracking.css";
 
 export default function TrackingApp() {
-  const [session, setSession] = useState<{
-    account: Account;
-    authorization: string;
-  }>();
+  const [session, setSession] = useState<{ account: Account }>();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [selected, setSelected] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [register, setRegister] = useState(false);
-  const request = useMemo(
-    () => trackingClient(session?.authorization),
-    [session],
-  );
+  const request = useMemo(() => trackingClient(), []);
 
   const run: Run = async (action) => {
     setBusy(true);
@@ -53,6 +45,18 @@ export default function TrackingApp() {
   }, []);
 
   useEffect(() => {
+    if (session) return;
+    void request<Account>("/me")
+      .then(async (account) => {
+        await loadProfiles(request);
+        setSession({ account });
+      })
+      .catch((failure) =>
+        setError(failure instanceof Error ? failure.message : "Ошибка запроса"),
+      );
+  }, [session, request, loadProfiles]);
+
+  useEffect(() => {
     if (!session) return;
     const refresh = () =>
       void loadProfiles(request).catch((failure) => {
@@ -71,25 +75,11 @@ export default function TrackingApp() {
 
   const profile = profiles.find((item) => item.id === selected);
 
-  function login(event: FormEvent<HTMLFormElement>) {
-    const form = event.currentTarget;
-    const get = fields(event);
-    const email = get("email");
-    const password = String(new FormData(form).get("password") ?? "");
+  function enter() {
     void run(async () => {
-      if (register) {
-        await request("/auth/register", "POST", {
-          email,
-          password,
-          displayName: get("name"),
-        });
-      }
-      const authorization = basic(email, password);
-      const client = trackingClient(authorization);
-      const account = await client<Account>("/me");
-      await loadProfiles(client);
-      setSession({ account, authorization });
-      form.reset();
+      const account = await request<Account>("/me");
+      await loadProfiles(request);
+      setSession({ account });
     });
   }
 
@@ -134,51 +124,11 @@ export default function TrackingApp() {
         </p>
       )}
       {!session ? (
-        <Panel title={register ? "Регистрация" : "Вход"}>
-          <form onSubmit={login} className="tracking-form">
-            {register && (
-              <label>
-                Имя
-                <input
-                  name="name"
-                  autoComplete="name"
-                  required
-                  maxLength={100}
-                />
-              </label>
-            )}
-            <label>
-              Почта
-              <input
-                name="email"
-                type="email"
-                autoComplete="username"
-                required
-                maxLength={254}
-              />
-            </label>
-            <label>
-              Пароль
-              <input
-                name="password"
-                type="password"
-                autoComplete={register ? "new-password" : "current-password"}
-                minLength={register ? 8 : undefined}
-                maxLength={72}
-                required
-              />
-            </label>
-            <button disabled={busy}>
-              {register ? "Создать аккаунт" : "Войти"}
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setRegister(!register)}
-            >
-              {register ? "Уже есть аккаунт" : "Создать аккаунт"}
-            </button>
-          </form>
+        <Panel title="Общий доступ">
+          <p>Авторизация временно отключена.</p>
+          <button type="button" disabled={busy} onClick={enter}>
+            Войти в приложение
+          </button>
         </Panel>
       ) : (
         <fieldset disabled={busy} className="tracking-workspace">
