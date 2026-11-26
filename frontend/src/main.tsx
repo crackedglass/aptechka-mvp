@@ -4,7 +4,8 @@ import TrackingApp from "./TrackingApp";
 import "./styles.css";
 import "./react.css";
 
-const demo = new URLSearchParams(window.location.search).has("demo");
+const params = new URLSearchParams(window.location.search);
+const tracking = params.has("tracking");
 createRoot(document.getElementById("root")!).render(
-  demo ? <App /> : <TrackingApp />,
+  tracking ? <TrackingApp /> : <App />,
 );
